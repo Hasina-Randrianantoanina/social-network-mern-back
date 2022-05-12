@@ -50,3 +50,54 @@ module.exports.deleteUser = async (req, res) => {
     }
 }
 
+module.exports.follow = async (req, res) =>{
+    if (!ObjectID.isValid(req.params.id) || !ObjectID.isValid(req.body.idToFollow)) 
+        return res.status(400).send('IDaa unknown : ' + req.params.id);
+
+    UserModel.findByIdAndUpdate(
+            req.params.id,
+            { $addToSet: { following: req.body.idToFollow }},
+            { new: true, upsert: true},
+            (err, docs) => {
+                if (!err) res.status(201).json(docs);
+                else return res.status(400).json(err);
+            }
+        )
+
+        // add to following list
+        UserModel.findByIdAndUpdate(
+            req.body.idToFollow,
+            { $addToSet: { followers: req.params.id} },
+            { new: true, upsert: true},
+            (err, docs) => {
+                if (err) return res.status(400).json(err);
+            }
+        )
+
+    
+}
+
+module.exports.unfollow = async (req, res) =>{
+    if (!ObjectID.isValid(req.params.id) || !ObjectID.isValid(req.body.idToUnFollow)) 
+    return res.status(400).send('IDaa unknown : ' + req.params.id);
+
+    UserModel.findByIdAndUpdate(
+        req.params.id,
+        { $pull: { following: req.body.idToUnFollow }},
+        { new: true, upsert: true},
+        (err, docs) => {
+            if (!err) res.status(201).json(docs);
+            else return res.status(400).json(err);
+        }
+    )
+
+    // add to following list
+    UserModel.findByIdAndUpdate(
+        req.body.idToUnFollow,
+        { $pull: { followers: req.params.id} },
+        { new: true, upsert: true},
+        (err, docs) => {
+            if (err) return res.status(400).json(err);
+        }
+    )
+}
