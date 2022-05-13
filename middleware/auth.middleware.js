@@ -35,6 +35,6 @@ module.exports.requireAuth = (req, res, next) => {
             }
         });
     }else{
-        console.log('no token find');
+        console.log('no token found');
     }
 }
